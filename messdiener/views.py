@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from messdiener.plan_misc.plan_assistant import create_import_plan
 from messdiener.plan_misc.plan_generator import generate_plan_refactor
-from messdiener.plan_misc.plan_odf_generator import generate_odf_plan_document
+from messdiener.plan_misc.plan_odt_generator import generate_odf_plan_document
 from messdiener.plan_misc.plan_utils import delete_masses_without_type, assign_types
 from .serializers import *
 
