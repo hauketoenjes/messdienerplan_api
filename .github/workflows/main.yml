@@ -1,0 +1,59 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Django CD
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*.*.*'
+  pull_request:
+
+jobs:
+  build-and-push:
+    name: Docker Container bauen und hochladen
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Repository checkouten
+        uses: actions/checkout@v2
+      -
+        name: Vorbereiten
+        id: prep
+        run: |
+          DOCKER_IMAGE=ghcr.io/hauketoenjes/messdienerplan_api
+          VERSION=noop
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            VERSION=nightly
+          elif [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+            if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
+              VERSION=latest
+            fi
+          elif [[ $GITHUB_REF == refs/pull/* ]]; then
+            VERSION=pr-${{ github.event.number }}
+          fi
+          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+      -
+        name: BuildX installieren
+        uses: docker/setup-buildx-action@v1
+      -
+        name: In ghcr.io einloggen
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PUSH }}
+      -
+         name: Docker Container bauen und hochladen
+         uses: docker/build-push-action@v2
+         with:
+           context: .
+           file: ./Dockerfile
+           push: ${{ github.event_name != 'pull_request' }}
+           tags: ${{ steps.prep.outputs.tags }} 

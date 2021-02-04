@@ -1,0 +1,30 @@
+version: '3.3'
+
+services:
+  database:
+    image: mariadb:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=${DATABASE_NAME}
+      - MYSQL_USER=${DATABASE_USER}
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+  mapi:
+    build: .
+    container_name: messdienerplan_api
+    depends_on:
+      - database
+    links:
+      - database
+    ports:
+      - 8080:80
+    environment:
+      - SECRET_KEY
+      - DATABASE_NAME
+      - DATABASE_USER
+      - DATABASE_PASSWORD
+      - DATABASE_HOST
+      - DATABASE_PORT
+      - DJANGO_SUPERUSER_USERNAME
+      - DJANGO_SUPERUSER_PASSWORD
+      - DJANGO_SUPERUSER_EMAIL
+      - MAPI_KAPLAN_URL
