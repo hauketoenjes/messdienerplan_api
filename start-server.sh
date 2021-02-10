@@ -10,7 +10,7 @@ fi
 # Check if KaPlan shall be polled, if so install cronjob
 # Remove Cronjob every time container is started to prevent double cronjobs
 crontab -r
-if [ -z "$POLL_KAPLAN" ]; then
+if [ ! -z "$POLL_KAPLAN" ]; then
   crontab -l | {
     cat
     echo "*/15 * * * * /opt/app/manage.py poll_kaplan"
