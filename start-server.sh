@@ -17,6 +17,9 @@ if [ ! -z "$POLL_KAPLAN" ]; then
   } | crontab -
 fi
 
+# Make sure cron is enabled
+service cron start
+
 # Start the gunicorn server
 (gunicorn messdienerplan_api.wsgi --user www-data --bind 0.0.0.0:8010 --workers 3) &
 nginx -g "daemon off;"
