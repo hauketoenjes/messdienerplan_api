@@ -7,15 +7,14 @@ if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; t
   (python manage.py createsuperuser --no-input)
 fi
 
-# Check if KaPlan shall be polled, if so install cronjob, otherwise remove cronjob (if container is being restarted)
+# Check if KaPlan shall be polled, if so install cronjob
+# Remove Cronjob every time container is started to prevent double cronjobs
+crontab -r
 if [ -z "$POLL_KAPLAN" ]; then
   crontab -l | {
     cat
     echo "*/15 * * * * /opt/app/manage.py poll_kaplan"
   } | crontab -
-
-else
-  crontab -r
 fi
 
 # Start the gunicorn server
