@@ -2,19 +2,10 @@
 python manage.py makemigrations
 python manage.py migrate
 python manage.py collectstatic --no-input
+python manage.py crontab add
 
 if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
   (python manage.py createsuperuser --no-input)
-fi
-
-# Check if KaPlan shall be polled, if so install cronjob
-# Remove Cronjob every time container is started to prevent double cronjobs
-crontab -r
-if [ ! -z "$POLL_KAPLAN" ]; then
-  crontab -l | {
-    cat
-    echo "*/15 * * * * /opt/app/manage.py poll_kaplan"
-  } | crontab -
 fi
 
 # Make sure cron is enabled
