@@ -54,8 +54,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_auth',
-    'corsheaders',
-    'django_crontab'
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -133,10 +132,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
-
-CRONJOBS = [
-    ('*/5 * * * *', 'django.core.management.call_command', ['poll_kaplan']),
 ]
 
 # Internationalization
