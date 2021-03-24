@@ -9,7 +9,7 @@ from messdiener.models import Mass, Acolyte, Group, MassAcolyteRole, Classificat
 
 @transaction.atomic
 def generate_plan(plan_pk):
-    acolytes = Acolyte.objects.all()
+    acolytes = Acolyte.objects.filter(inactive=False).all()
     groups = Group.objects.all()
 
     group_acolyte_classification = {}
@@ -89,7 +89,7 @@ def calculate_age(birthday):
 
 
 def generate_plan_refactor(plan_pk):
-    acolytes = Acolyte.objects.filter(inactive=False)
+    acolytes = Acolyte.objects.filter(inactive=False).all()
     classifications = Classification.objects.all()
 
     # acolyte_availability = {acolyte, bool}
