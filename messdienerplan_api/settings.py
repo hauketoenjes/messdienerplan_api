@@ -1,32 +1,26 @@
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+# Währen der Entwicklung DEBUG auf True setzen.
+# Ist DEBUG aktiv, wird SQLite als Datenbank genutzt.
+# Ist DEBUG inaktiv wird MySQL als Datenbank genutzt. Die Verbindungsparameter dafür werden aus dem Environment gelesen.
 DEBUG = False
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY WARNING: don't run with debug turned on in production!
 
 if DEBUG:
     SECRET_KEY = "123"
 else:
     SECRET_KEY = os.environ['SECRET_KEY']
 
-# SECURITY WARNING: don't run with debug turned on in production!
-
-
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 if not DEBUG:
     ALLOWED_HOSTS = ['*']
-
     REST_SESSION_LOGIN = False
-
-    # SESSION_COOKIE_SECURE = True
-    # CSRF_COOKIE_SECURE = True
     SECURE_REFERRER_POLICY = []
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -91,13 +85,11 @@ WSGI_APPLICATION = 'messdienerplan_api.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+#
+# Im Debug Modus SQLite verwenden und in Production MySQL
 
 if not DEBUG:
     DATABASES = {
-        # 'default': {
-        #     'ENGINE': 'django.db.backends.sqlite3',
-        #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        # }
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': os.environ['DATABASE_NAME'],

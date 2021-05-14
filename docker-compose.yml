@@ -3,13 +3,15 @@ version: '3.3'
 services:
   database:
     image: mariadb:latest
+    volumes:
+      - ./data:/var/lib/mysql # Store Database files in ./data
     environment:
       - MYSQL_ROOT_PASSWORD
       - MYSQL_DATABASE=${DATABASE_NAME}
       - MYSQL_USER=${DATABASE_USER}
       - MYSQL_PASSWORD=${DATABASE_PASSWORD}
   mapi:
-    build: .
+    image: ghcr.io/hauketoenjes/messdienerplan_api:latest
     container_name: messdienerplan_api
     depends_on:
       - database
