@@ -88,6 +88,9 @@ WSGI_APPLICATION = 'messdienerplan_api.wsgi.application'
 #
 # Im Debug Modus SQLite verwenden und in Production MySQL
 
+# DEFAULT_AUTO_FIELD setzen
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 if not DEBUG:
     DATABASES = {
         'default': {
