@@ -4,7 +4,9 @@ services:
   database:
     image: mariadb:latest
     volumes:
-      - ./data:/var/lib/mysql # Store Database files in ./data
+      - /mnt/mapi-database:/var/lib/mysql
+    ports:
+      - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD
       - MYSQL_DATABASE=${DATABASE_NAME}

@@ -1,85 +1,10 @@
 import itertools
 import random
-from datetime import date, timedelta
+from datetime import date
 
 from django.db import transaction
 
-from messdiener.models import Mass, Acolyte, Group, MassAcolyteRole, Classification
-
-
-@transaction.atomic
-def generate_plan(plan_pk):
-    acolytes = Acolyte.objects.filter(inactive=False).all()
-    groups = Group.objects.all()
-
-    group_acolyte_classification = {}
-    acolyte_classification = {}
-    acolyte_classification_index = {}
-
-    # Listen und Maps initialisieren
-    for group in groups:
-        group_acolyte_classification[group] = {}
-        for classification in group.classifications.all():
-            group_acolyte_classification[group][classification] = []
-
-    # Die Messdiener den Einteilungen zuordnen
-    for acolyte in acolytes:
-        age = calculate_age(acolyte.birthday)
-
-        for group in group_acolyte_classification:
-            if group != acolyte.group:
-                continue
-
-            for classification in group_acolyte_classification[group]:
-                if classification.ageFrom <= age <= classification.ageTo:
-                    group_acolyte_classification[group][classification].append(acolyte)
-
-    # Die Liste durchmischen um den Plan zufällig zu generieren
-    for group in group_acolyte_classification:
-        for classification in group_acolyte_classification[group]:
-            random.shuffle(group_acolyte_classification[group][classification])
-            acolyte_classification[classification] = group_acolyte_classification[group][classification]
-            acolyte_classification_index[classification] = 0
-
-    # Falls schon Messdiener eingetragen sind, alle löschen, bei denen der Typ nicht null ist (ohne
-    # Typ können keine neuen Messdiener generiert werden)
-    MassAcolyteRole.objects.filter(mass__plan_id=plan_pk).filter(mass__type__isnull=False).delete()
-
-    current_mass_time = None
-    past_three_days_acolytes = []
-
-    for mass in Mass.objects.filter(plan=plan_pk).order_by('time'):
-        if mass.type is None:
-            continue
-
-        if current_mass_time is None:
-            current_mass_time = mass.time
-
-        if current_mass_time < (mass.time - timedelta(days=3)):
-            current_mass_time = mass.time
-            past_three_days_acolytes.clear()
-
-        type = mass.type
-
-        for requirement in type.requirements.all():
-            role = requirement.role
-
-            for _ in itertools.repeat(None, requirement.quantity):
-                acolyte = None
-                while acolyte is None or past_three_days_acolytes.__contains__(acolyte):
-                    classification = requirement.classifications.order_by('?').first()
-
-                    index = acolyte_classification_index[classification]
-                    acolyte_classification_index[classification] = acolyte_classification_index[classification] + 1
-
-                    if index >= len(acolyte_classification[classification]):
-                        acolyte_classification_index[classification] = 0
-                        index = 0
-
-                    acolyte = acolyte_classification[classification][index]
-
-                past_three_days_acolytes.append(acolyte)
-                MassAcolyteRole(mass=mass, acolyte=acolyte, role=role).save()
+from messdiener.models import Mass, Acolyte, MassAcolyteRole, Classification
 
 
 def calculate_age(birthday):
@@ -88,7 +13,8 @@ def calculate_age(birthday):
     return age
 
 
-def generate_plan_refactor(plan_pk):
+@transaction.atomic
+def generate_plan(plan_pk):
     acolytes = Acolyte.objects.filter(inactive=False).all()
     classifications = Classification.objects.all()
 
@@ -134,10 +60,10 @@ def generate_plan_refactor(plan_pk):
         if mass.type is None:
             continue
 
-        type = mass.type
+        mass_type = mass.type
 
         # Durch die Anforderungen des Typs iterieren
-        for requirement in type.requirements.all():
+        for requirement in mass_type.requirements.all():
             role = requirement.role
 
             # Liste von Einteilungen, die in Frage kommen für den Messetyp
@@ -149,8 +75,8 @@ def generate_plan_refactor(plan_pk):
 
                 # TODO Was passiert, wenn es keinen Messdiener in der Altersgruppe gibt? Dann würde das while ewig laufen...
                 while selected_acolyte is None:
-                    classification_list = (classification for classification in classification_acolytes_keys if
-                                           classification in possible_classifications)
+                    classification_list = list(classification for classification in classification_acolytes_keys if
+                                               classification in possible_classifications)
 
                     for classification in classification_list:
 
