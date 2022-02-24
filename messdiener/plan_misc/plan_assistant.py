@@ -52,7 +52,7 @@ def create_import_plan(date_from, date_to):
         mass_date_time = pytz.timezone('CET').localize(mass_date_time)
 
         mass_extra = row[6]
-        mass_location_string = row[12]
+        mass_location_string = row[13]
 
         try:
             with transaction.atomic():
